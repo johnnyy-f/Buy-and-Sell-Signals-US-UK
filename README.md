@@ -17,7 +17,7 @@ This project serves as a showcase of a complete data science pipeline, from data
 
 ---
 
-## 💻 Technical Stack
+## Technical Stack
 
 | Category | Tools & Libraries |
 | :--- | :--- | 
@@ -56,7 +56,7 @@ A table similar to the below will be showcased in the notebook, ranking by the h
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 These instructions will get a copy of the project up and running on your local machine.
 
