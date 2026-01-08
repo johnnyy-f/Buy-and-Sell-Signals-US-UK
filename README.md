@@ -1,6 +1,6 @@
 # Stock Signal Generation: Probabilistic Technical Analysis
 
-**Project Status:** Active | **Last Updated:** [12th December, 2025]
+**Project Status:** Active | **Last Updated:** [8th January, 2026]
 
 A data-driven system applying quantitative analytic principles to generate probabilistic buy/sell signals across US and UK equity markets. This project was initiated as a personal endeavor, leveraging my professional insights and domain knowledge gained while working at IG Group.
 
@@ -98,7 +98,7 @@ Follow these steps to refresh your data and launch the dashboard:
 
 ## 1. Add your Market CSVs
 
-Place your CSV files in the `/markets` folder.  
+Place your CSV files in the `/markets` folder. Follow same format as the example CSV files found, ensure Tickers title.  
 The script is designed to read tickers from the **first column**, skipping the header rows.
 
 ---
