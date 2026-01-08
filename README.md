@@ -83,6 +83,57 @@ You will need Python 3.x installed.
 
 ---
 
+## Update to Original Project
+
+To improve usability, the project has been updated to allow CSV files containing ticker lists to be uploaded in the `/markets` folder, eliminating the need to hard-code tickers in the Jupyter Notebook.  
+
+For easier navigation and analysis, a Streamlit dashboard has been added. Each uploaded CSV appears as a separate tab, allowing you to switch between markets and view signals interactively.
+
+
+## Execution Instructions
+
+Follow these steps to refresh your data and launch the dashboard:
+
+---
+
+## 1. Add your Market CSVs
+
+Place your CSV files in the `/markets` folder.  
+The script is designed to read tickers from the **first column**, skipping the header rows.
+
+---
+
+## 2. Run the Data Pipeline
+
+Run this script to fetch the latest market data and calculate the technical signal probabilities.  
+This must be run whenever you want to update the signals with the latest market closes.
+
+```bash
+python pipeline.py
+```
+
+The script will log its progress in the terminal as it processes each file.
+
+---
+
+## 3. Launch the Dashboard
+
+Once the pipeline has generated the processed files, launch the interactive web interface:
+
+```bash
+streamlit run app.py
+```
+
+## Accessing the App
+
+The dashboard will open in your browser at:  
+[http://localhost:8501](http://localhost:8501)
+
+**Tabs:** Switch between different markets using the tabs at the top.  
+**Dropdowns:** Use the dropdown menu located inside the Plotly charts to switch between specific stocks within that market.
+
+---
+
 ## Future Work Aspiration & Machine Learning Integration
 
 To further enhance the predictive power and demonstrate advanced data science skills, the following steps are planned:

@@ -62,40 +62,50 @@ def download_ticker(ticker, start="2019-01-01", end=None):
     df['Ticker'] = ticker
     return df
 
-def download_multiple_tickers(ticker_list, start="2019-01-01", end=None):
+def download_multiple_tickers(ticker_source, start="2019-01-01", end=None):
     """
-    Downloads historical data for multiple tickers and returns a dictionary 
-    where keys are ticker symbols and values are DataFrames.
+    Downloads historical data for multiple tickers.
+    ticker_source: Can be a list of strings OR a path to a CSV file.
     """
     
-    # 1. Helper function (Nested for encapsulation, or kept outside for clarity)
+    # 1. Handle CSV input automatically
+    if isinstance(ticker_source, str) and ticker_source.endswith('.csv'):
+        try:
+            # Assuming the CSV has a column named 'Ticker' or is just a list
+            df_csv = pd.read_csv(ticker_source)
+            if 'Ticker' in df_csv.columns:
+                ticker_list = df_csv['Ticker'].tolist()
+            else:
+                # Fallback: if no 'Ticker' column, assume the first column contains tickers
+                ticker_list = df_csv.iloc[:, 0].tolist()
+        except Exception as e:
+            print(f"Error reading CSV {ticker_source}: {e}")
+            return {}
+    else:
+        # If it's already a list, use it directly
+        ticker_list = ticker_source
+
+    # 2. Helper function (unchanged)
     def download_ticker(ticker, start=start, end=end):
-        """Downloads data for a single ticker, adjusts, resets index, and adds Ticker column."""
-        
-        # progress=False hides the status bar for a cleaner output
-        # auto_adjust=True removes 'Adj Close', 'Close' duplication
         df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
-        
         if df.empty:
             print(f"Warning: Could not download data for {ticker}. Skipping.")
             return None
-            
         df = df.reset_index()
         df['Ticker'] = ticker
         return df
 
-    # 2. Main execution logic (Dictionary Comprehension)
+    # 3. Main execution logic
     all_data = {
-        ticker: download_ticker(ticker) 
+        ticker: download_ticker(str(ticker).strip()) 
         for ticker in ticker_list
-        if download_ticker(ticker) is not None
+        if ticker is not None
     }
     
+    # Filter out None results efficiently
+    all_data = {k: v for k, v in all_data.items() if v is not None}
+    
     return all_data
-
-
-# NOTE: The function below relies on the external function 'compute_indicators(df)' 
-# being defined and available globally or imported from trading_tools.
 
 def calculate_signal_probabilities(all_data):
     """
@@ -178,43 +188,6 @@ def calculate_signal_probabilities(all_data):
         
     return results
 
-US_Stocks = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "JPM", "JNJ", "V", "PG", "XOM",
-    "CVX", "HD", "MRK", "ABBV", "AVGO", "PEP", "KO", "BAC", "MA", "COST",
-    "WMT", "PFE", "TMO", "ORCL", "DIS", "ACN", "CMCSA", "NFLX", "INTC", "CSCO",
-    "MCD", "IBM", "QCOM", "TXN", "UNH", "LIN", "UPS", "RTX", "CAT",
-    "HON", "DHR", "PM", "ADP", "NKE", "MDLZ", "SBUX", "LOW", "AMD",
-    "AMAT", "GE", "BKNG", "DE", "TGT", "LMT", "SPGI", "BLK", "GS",
-    "MS", "ZTS", "CB", "AON", "APD", "BMY", "CI", "CMI", "COP",
-    "DUK", "EMR", "EOG", "EW", "FDX", "GILD", "HCA", "ITW",
-    "LLY", "MDT", "MMC", "MO", "NSC", "PLD", "SO", "SYK",
-    "T", "VZ", "WBA", "USB", "SCHW", "PNC", "PSX", "KHC"
-]
-
-UK_Stocks = [
-    "AZN.L", "SHEL.L", "HSBA.L", "BP.L", "GSK.L", "DGE.L", "BATS.L", "ULVR.L",
-    "RIO.L", "RDSB.L", "RDSA.L", "LSEG.L", "NG.L", "BTI.L", "PRU.L", "AV.L",
-    "BARC.L", "BARC.L", "NWG.L", "LLOY.L", "STAN.L", "VOD.L", "IMB.L",
-    "BNZL.L", "CRH.L", "RTO.L", "SSE.L", "SGRO.L", "REL.L", "AAL.L",
-    "ANTO.L", "SMT.L", "HLMA.L", "AVST.L", "LGEN.L", "MNG.L", "PSN.L",
-    "TW.L", "BDEV.L", "SDR.L", "SN.L", "CRDA.L", "OCDO.L", "SBRY.L",
-    "TSCO.L", "WMH.L", "MKS.L", "IMI.L", "ITRK.L", "ICP.L", "AUTO.L",
-    "WPP.L", "GLEN.L", "MEL.L", "SMDS.L", "RS1.L", "WEIR.L", "SPX.L",
-    "FERG.L", "IHG.L", "PHNX.L", "ULVR.L"
-]
-
-# US Stable tickers
-US_Stable = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "JPM", "JNJ", "PG", "XOM", "CVX", "HD",
-    "KO", "PEP", "MA", "V", "COST", "MCD", "MRK", "ABBV", "UNH", "IBM"
-]
-
-# UK Stable tickers
-UK_Stable = [
-    "BP.L", "SHEL.L", "AZN.L", "GSK.L", "HSBA.L", "LLOY.L", "BATS.L", "ULVR.L",
-    "RIO.L", "DGE.L", "NG.L", "AV.L", "SSE.L"
-]
-
 def create_summary_table(results):
     """
     Generates a summary DataFrame of the latest close price and 
@@ -269,7 +242,7 @@ def plot_interactive_signals(results, probability_column='Buy_Probability'):
     """
     
     # Dynamically determine the short name for the legend/title
-    prob_short_name = probability_column.replace('_Probability', 'Prob')
+    prob_short_name = probability_column.replace('_Probability', ' Strength')
     
     fig = go.Figure()
 

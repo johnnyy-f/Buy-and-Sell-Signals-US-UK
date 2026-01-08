@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='trading_tools', # The name you use for importing
+    name='trading_tools',
     version='0.1.0',
     packages=find_packages(),
 )
